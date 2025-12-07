@@ -1,6 +1,9 @@
 import { getContactPage } from "@/server/actions";
 import { ContactSchema, type ContactContent } from "./schema";
 import ContactForm from "./ContactForm";
+import { cacheTag } from "next/cache";
+import AdminPageWrapper from "@/components/AdminPageWrapper";
+import { Suspense } from "react";
 
 const defaultContactContent: ContactContent = {
   headline: "Contact our team",
@@ -12,19 +15,24 @@ const defaultContactContent: ContactContent = {
   ctaLink: "mailto:hello@example.com",
 };
 
+async function Form(){
+  "use cache"
+  cacheTag("contact-page");
+  const existing = await getContactPage();
+  const initialContent = existing?.content ?? defaultContactContent;
+
+  return <ContactForm initialContent={initialContent} />
+}
+
 export default async function AdminContactPage() {
   const existing = await getContactPage();
   const initialContent = existing?.content ?? defaultContactContent;
 
   return (
-    <div className="flex flex-col gap-6 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-600">Contact</p>
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900">Contact page content</h1>
-        <p className="text-sm text-zinc-600">Manage contact details, CTA, and address.</p>
-      </div>
-
-      <ContactForm initialContent={initialContent} />
-    </div>
+    <AdminPageWrapper pageName="Contact" headline="Contact page content" subheadline="Update the headline, subheadline, and contact details for your Contact page.">
+      <Suspense fallback={<div>Loading form...</div>}>
+        <Form />
+      </Suspense>
+    </AdminPageWrapper>
   );
 }

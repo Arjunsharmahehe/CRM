@@ -1,25 +1,77 @@
+"use client";
+
 import Link from "next/link";
+import { Menu } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+
+const navItems = [
+  { href: "/", label: "Home" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact Us" },
+];
 
 export default function Navbar() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl bg-amber-500" />
-          <div className="leading-tight">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">Admin</p>
-            <p className="text-sm font-semibold text-zinc-900">Site CMS</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 text-sm font-semibold">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-800 shadow-sm transition hover:border-amber-200 hover:text-amber-700"
-          >
-            View site
+    <nav className="sticky top-0 z-50 border-b bg-white">
+      <div className="flex h-16 items-center justify-between px-4">
+        <div className="flex items-center">
+          <Link href="/admin" className="text-xl font-semibold">
+            Admin Panel
           </Link>
         </div>
+        
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-6">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Mobile Navigation */}
+        <div className="md:hidden">
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <SheetHeader>
+                <SheetTitle>Where to?</SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col gap-6 mt-6">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className="px-4 font-bold text-4xl text-amber-700"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
-    </header>
+    </nav>
   );
 }

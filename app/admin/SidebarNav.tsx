@@ -1,50 +1,53 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowBigLeft, ArrowLeft, Home, Info, MessageSquare } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader } from "@/components/ui/sidebar";
+import { LucideIcon } from "lucide-react";
 
-type NavItem = {
-  title: string;
-  href: string;
-  description?: string;
-};
 
-type Props = {
-  items: NavItem[];
-};
+export default function SidebarNav() {
+    const items = [
+        { title: "Back to site", href: "/", icon: ArrowLeft },
+        { title: "Home", href: "/admin/home", icon: Home},
+        { title: "About", href: "/admin/about", icon: Info },
+        { title: "Contact", href: "/admin/contact", icon: MessageSquare },
+    ];
 
-export default function SidebarNav({ items }: Props) {
+
   const pathname = usePathname();
 
   return (
-    <nav className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-      <div className="mb-4 px-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-600">
-        Pages
-      </div>
-      <ul className="space-y-2">
-        {items.map((item) => {
-          const active = pathname === item.href;
-          return (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className={cn(
-                  "block rounded-xl border border-transparent px-3 py-2 transition",
-                  active
-                    ? "border-amber-200 bg-amber-50 text-amber-900 shadow-sm"
-                    : "hover:border-amber-100 hover:bg-zinc-50",
-                )}
-              >
-                <div className="text-sm font-semibold">{item.title}</div>
-                {item.description ? (
-                  <p className="text-xs text-zinc-600">{item.description}</p>
-                ) : null}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
-  );
+    <Sidebar className="text-neutral-800">
+      <SidebarHeader>
+        <div className="flex items-center gap-2 py-4 px-4">
+          <div className="h-9 w-9 rounded-xl bg-amber-500" />
+          <div className="leading-tight">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">Admin</p>
+            <p className="text-sm font-semibold text-zinc-900">Site CMS</p>
+          </div>
+        </div>
+      </SidebarHeader>
+      <SidebarContent>
+          <SidebarMenu className="px-2">
+            {items.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild isActive={isActive}>
+                    <Link href={item.href} className="px-4">
+                      <item.icon className="mr-2 size-5" aria-hidden="true" />
+                      {item.title}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+      </SidebarContent>
+      <SidebarFooter />
+    </Sidebar>
+  )
 }

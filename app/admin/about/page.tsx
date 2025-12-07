@@ -1,6 +1,9 @@
 import { getAboutPage } from "@/server/actions";
 import { AboutSchema, type AboutContent } from "./schema";
 import AboutForm from "./AboutForm";
+import AdminPageWrapper from "@/components/AdminPageWrapper";
+import { cacheTag } from "next/cache";
+import { Suspense } from "react";
 
 const defaultAboutContent: AboutContent = {
   heroTitle: "About our team",
@@ -10,19 +13,24 @@ const defaultAboutContent: AboutContent = {
   body: "Use this space to tell your story, your mission, and what makes your company different.",
 };
 
+async function Form(){
+  "use cache"
+  cacheTag("about-page");
+  const existing = await getAboutPage();
+  const initialContent = existing?.content ?? defaultAboutContent;
+
+  return <AboutForm initialContent={initialContent} />
+}
+
 export default async function AdminAboutPage() {
   const existing = await getAboutPage();
   const initialContent = existing?.content ?? defaultAboutContent;
 
   return (
-    <div className="flex flex-col gap-6 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-600">About</p>
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900">About page content</h1>
-        <p className="text-sm text-zinc-600">Update the hero and body copy for your About page.</p>
-      </div>
-
-      <AboutForm initialContent={initialContent} />
-    </div>
+    <AdminPageWrapper pageName="About" headline="About page content" subheadline="Update the hero and body copy for your About page.">
+      <Suspense fallback={<div>Loading form...</div>}>
+        <Form />
+      </Suspense>
+    </AdminPageWrapper>
   );
 }
