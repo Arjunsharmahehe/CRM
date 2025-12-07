@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { saveAboutPage } from "@/server/actions";
-import { AboutSchema, type AboutContent } from "./schema";
+import { AboutSchema, type AboutContent } from "../../app/admin/about/schema";
 import { cn } from "@/lib/utils";
 
 export default function AboutForm({ initialContent }: { initialContent: AboutContent }) {

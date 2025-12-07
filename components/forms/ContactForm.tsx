@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { saveContactPage } from "@/server/actions";
-import { ContactSchema, type ContactContent } from "./schema";
+import { ContactSchema, type ContactContent } from "../../app/admin/contact/schema";
 import { cn } from "@/lib/utils";
 
 export default function ContactForm({ initialContent }: { initialContent: ContactContent }) {
