@@ -1,6 +1,6 @@
 import { getContactPage } from "@/server/actions";
 import { ContactSchema, type ContactContent } from "./schema";
-import ContactForm from "../../../components/forms/ContactForm";
+import ContactForm from "@/components/forms/ContactForm";
 import { cacheTag } from "next/cache";
 import AdminPageWrapper from "@/components/AdminPageWrapper";
 import { Suspense } from "react";

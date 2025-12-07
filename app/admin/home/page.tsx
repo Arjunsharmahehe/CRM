@@ -1,7 +1,7 @@
 import { getHomePage } from "@/server/actions";
 import { HomepageSchema } from "@/types";
 import type { z } from "zod";
-import HomeForm from "./HomeForm";
+import HomeForm from "@/components/forms/HomeForm";
 import { Suspense } from "react";
 import { cacheTag } from "next/cache";
 import AdminPageWrapper from "@/components/AdminPageWrapper";
