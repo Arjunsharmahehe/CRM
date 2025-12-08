@@ -11,7 +11,7 @@ pnpm run dev
 ```
 - Test build
 ```bash
-pnpm built
+pnpm build
 ```
 - Check linting warnings
 ```bash
