@@ -172,6 +172,7 @@ export async function saveCompanyInfo(content: unknown) {
 			set: { content: validatedContent },
 		});
 	updateTag("company-info-form");
+	updateTag("public-footer");
 	return { slug: "company-info" as const, content: validatedContent };
 }
 
@@ -208,6 +209,7 @@ export async function deleteOffering(id: number) {
 
 	updateTag("home-form");
 	updateTag("home-page");
+	updateTag("public-footer");
 	return row;
 }
 
@@ -217,6 +219,7 @@ export async function createOffering(input: unknown) {
 	
 	updateTag("home-form");
 	updateTag("home-page");
+	updateTag("public-footer");
 	return row ?? parsed;
 }
 
