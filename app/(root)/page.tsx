@@ -5,6 +5,8 @@ import { listActiveOfferings, getHomePage } from "@/server/actions";
 import { HomepageSchema } from "@/types";
 import type { z } from "zod";
 import { cacheTag } from "next/cache";
+import Threads from "@/components/Threads";
+import { OfferingCard } from "@/components/OfferingCard";
 
 type HomeContent = z.infer<typeof HomepageSchema>;
 
@@ -32,73 +34,89 @@ async function HomeContent() {
   const content = page?.content ?? defaultHomeContent;
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900">
-      <header className="relative overflow-hidden bg-white">
-        <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 lg:grid-cols-2 lg:items-center">
+    <div className="min-h-screen w-full bg-zinc-50 text-zinc-900">
+      <header className="relative flex min-h-screen w-full items-center justify-center overflow-hidden">
+        {/* Animated background */}
+        <div className="absolute inset-0 z-0">
+          <Threads
+            amplitude={1.3}
+            distance={0.6}
+            enableMouseInteraction={true}
+          />
+        </div>
+
+        {/* Gradient overlays for depth */}
+        {/* <div className="absolute inset-0 z-1 bg-linear-to-b from-zinc-900/20 via-transparent to-zinc-50" />
+        <div className="absolute bottom-0 left-0 right-0 z-1 h-32 bg-linear-to-t from-zinc-50 to-transparent" /> */}
+
+        {/* Hero content */}
+        <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 py-20 lg:grid-cols-2 lg:items-center lg:gap-16">
+          {/* Text content */}
           <div className="space-y-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-600">Homepage</p>
-            <h1 className="text-4xl font-bold leading-tight tracking-tight lg:text-5xl">
+            <h1 className="text-5xl font-bold leading-tight tracking-tight text-zinc-900 lg:text-6xl xl:text-7xl">
               {content.hero.headline}
             </h1>
-            <p className="text-lg text-zinc-700 lg:text-xl">{content.hero.subheadline}</p>
-            <div className="flex flex-wrap gap-3">
+            <p className="text-xl leading-relaxed text-zinc-700 lg:text-2xl">
+              {content.hero.subheadline}
+            </p>
+            <div className="flex flex-wrap gap-4">
               <Link
                 href={content.hero.ctaLink}
-                className="inline-flex items-center justify-center rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
+                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-amber-600 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-amber-600/30 transition-all hover:bg-amber-700 hover:shadow-xl hover:shadow-amber-600/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
               >
                 {content.hero.ctaText}
+                <svg className="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
               </Link>
             </div>
           </div>
-          <div className="relative h-72 overflow-hidden rounded-2xl bg-zinc-100 shadow-lg lg:h-96">
-            <Image
-              src={content.hero.heroImageUrl}
-              alt={content.hero.headline}
-              fill
-              className="object-cover"
-              priority
-            />
+
+          {/* Hero image */}
+          <div className="relative">
+            {/* <div className="absolute -left-4 -top-4 h-72 w-72 rounded-full bg-amber-400/20 blur-3xl" />
+            <div className="absolute -bottom-4 -right-4 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl" /> */}
+            <div className="relative overflow-hidden rounded-3xl bg-zinc-100 shadow-2xl shadow-zinc-900/20">
+              <Image
+                src={content.hero.heroImageUrl}
+                alt={content.hero.headline}
+                width={600}
+                height={600}
+                className="object-cover"
+                priority
+              />
+            </div>
           </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 animate-bounce">
+          <svg className="h-6 w-6 text-zinc-900/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
         </div>
       </header>
 
       <main className="mx-auto flex max-w-6xl flex-col gap-16 px-6 py-16">
-        <section className="grid gap-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600">Offerings</p>
-              <h2 className="text-3xl font-bold tracking-tight">{content.offerings.title}</h2>
-            </div>
+        <section id="offerings" className="grid gap-12">
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600">Offerings</p>
+            <h2 className="mt-2 text-4xl font-bold tracking-tight lg:text-5xl">{content.offerings.title}</h2>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {offerings.map((item) => (
-              <article key={item.id} className="flex h-full flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
-                  <span>ID {item.id}</span>
-                  {item.isActive ? (
-                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">Active</span>
-                  ) : (
-                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600">Hidden</span>
-                  )}
-                </div>
-                <h3 className="text-lg font-semibold text-zinc-900">{item.title}</h3>
-                <p className="text-sm text-zinc-700">{item.description}</p>
-                {item.href && (
-                  <Link href={item.href} className="text-sm font-semibold text-amber-700 hover:text-amber-800">
-                    Learn more →
-                  </Link>
-                )}
-              </article>
+          <div className="flex flex-col gap-0.5">
+            {offerings.map((item, index) => (
+              <OfferingCard key={item.id} offering={item} index={index} />
             ))}
             {offerings.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-6 text-sm text-zinc-600">
-                No offerings yet. Add some in the database to populate this section.
+              <div className="col-span-full rounded-3xl border border-dashed border-zinc-300 bg-white p-12 text-center text-zinc-600">
+                <p className="text-lg font-medium">No offerings yet</p>
+                <p className="mt-2 text-sm text-zinc-500">Add some in the admin panel to showcase your services.</p>
               </div>
             )}
           </div>
         </section>
 
-        <section className="grid gap-8">
+        <section className="grid gap-8 mt-48">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600">Testimonials</p>

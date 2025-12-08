@@ -23,8 +23,6 @@ async function Form(){
 }
 
 export default async function AdminAboutPage() {
-  const existing = await getAboutPage();
-  const initialContent = existing?.content ?? defaultAboutContent;
 
   return (
     <AdminPageWrapper pageName="About" headline="About page content" subheadline="Update the hero and body copy for your About page.">
