@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Activity, useState, useTransition } from "react";
 import { saveHomePage } from "@/server/actions";
 import { HomepageSchema } from "@/types";
 import { cn } from "@/lib/utils";
@@ -10,12 +10,15 @@ import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { ImageUpload } from "@/components/image-upload";
 import { toast } from "sonner";
+import { Spinner } from "../ui/spinner";
 
 type HomeContent = z.infer<typeof HomepageSchema>;
 
 type Props = {
   initialContent: HomeContent;
 };
+
+type Tab = "hero" | "offerings" | "testimonials";
 
 const newTestimonial = () => ({
   quote: "A short testimonial about our work.",
@@ -25,6 +28,7 @@ const newTestimonial = () => ({
 });
 
 export default function HomeForm({ initialContent }: Props) {
+  const [activeTab, setActiveTab] = useState<Tab>("hero");
   const [content, setContent] = useState<HomeContent>(initialContent);
   const [heroImagePreview, setHeroImagePreview] = useState<string | null>(
     initialContent.hero.heroImageUrl || null
@@ -147,89 +151,127 @@ export default function HomeForm({ initialContent }: Props) {
     });
   };
 
+  const tabs: { id: Tab; label: string }[] = [
+    { id: "hero", label: "Hero Section" },
+    { id: "offerings", label: "Offerings" },
+    { id: "testimonials", label: "Testimonials" },
+  ];
+
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-8">
-      <section className="grid gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600">Hero</p>
-          <h2 className="text-xl font-semibold text-zinc-900">Headline & CTA</h2>
-          <p className="text-sm text-zinc-600">The first thing visitors see.</p>
+    <form onSubmit={onSubmit} className="flex flex-col gap-6">
+      {/* Custom Tabs */}
+      <div className="border-b border-zinc-200">
+        <div className="flex gap-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "px-4 py-2.5 text-sm font-medium transition-colors relative",
+                activeTab === tab.id
+                  ? "text-amber-700"
+                  : "text-zinc-600 hover:text-zinc-900"
+              )}
+            >
+              {tab.label}
+              {activeTab === tab.id && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-600" />
+              )}
+            </button>
+          ))}
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Label className="grid h-fit gap-2 text-sm font-medium text-zinc-800">
-            Headline
-            <Input
-              value={content.hero.headline}
-              onChange={(e) => handleHeroChange("headline", e.target.value)}
-              maxLength={48}
-              required
-            />
-          </Label>
-          <Label className="grid gap-2 text-sm font-medium text-zinc-800">
-            Subheadline
-            <Textarea
-              className="resize-none"
-              value={content.hero.subheadline}
-              onChange={(e) => handleHeroChange("subheadline", e.target.value)}
-              maxLength={128}
-              rows={3}
-              required
-            />
-          </Label>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Label className="grid gap-2 text-sm font-medium text-zinc-800">
-            CTA Text
-            <Input
-              value={content.hero.ctaText}
-              onChange={(e) => handleHeroChange("ctaText", e.target.value)}
-              maxLength={24}
-              required
-            />
-          </Label>
-          <Label className="grid gap-2 text-sm font-medium text-zinc-800 sm:col-span-2">
-            CTA Link (URL)
-            <Input
-              type="url"
-              value={content.hero.ctaLink}
-              onChange={(e) => handleHeroChange("ctaLink", e.target.value)}
-              required
-            />
-          </Label>
-        </div>
-        <div className="grid gap-2">
-          <Label className="text-sm font-medium text-zinc-800">
-            Hero Image
-          </Label>
-          <ImageUpload
-            value={heroImagePreview}
-            onChange={handleHeroImageChange}
-            onError={handleImageError}
-            maxSizeMB={4}
-          />
-        </div>
-      </section>
+      </div>
 
-      <section className="grid gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600">Offerings</p>
-          <h2 className="text-xl font-semibold text-zinc-900">Section title</h2>
-          <p className="text-sm text-zinc-600">Offerings list is driven by the database; this only sets the section heading.</p>
-        </div>
-        <Label className="grid gap-2 text-sm font-medium text-zinc-800">
-          Title
-          <Input
-            value={content.offerings.title}
-            onChange={(e) => handleOfferingsChange(e.target.value)}
-            maxLength={32}
-            required
-          />
-        </Label>
-      </section>
+      {/* Hero Tab */}
+      <Activity mode={ activeTab !== "hero" ? "hidden" : "visible" }>
+        <section className="grid gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600">Hero</p>
+            <h2 className="text-xl font-semibold text-zinc-900">Headline & CTA</h2>
+            <p className="text-sm text-zinc-600">The first thing visitors see.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Label className="grid h-fit gap-2 text-sm font-medium text-zinc-800">
+              Headline
+              <Input
+                value={content.hero.headline}
+                onChange={(e) => handleHeroChange("headline", e.target.value)}
+                maxLength={48}
+                required
+              />
+            </Label>
+            <Label className="grid gap-2 text-sm font-medium text-zinc-800">
+              Subheadline
+              <Textarea
+                className="resize-none"
+                value={content.hero.subheadline}
+                onChange={(e) => handleHeroChange("subheadline", e.target.value)}
+                maxLength={128}
+                rows={3}
+                required
+              />
+            </Label>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Label className="grid gap-2 text-sm font-medium text-zinc-800">
+              CTA Text
+              <Input
+                value={content.hero.ctaText}
+                onChange={(e) => handleHeroChange("ctaText", e.target.value)}
+                maxLength={24}
+                required
+              />
+            </Label>
+            <Label className="grid gap-2 text-sm font-medium text-zinc-800 sm:col-span-2">
+              CTA Link (URL)
+              <Input
+                type="url"
+                value={content.hero.ctaLink}
+                onChange={(e) => handleHeroChange("ctaLink", e.target.value)}
+                required
+              />
+            </Label>
+          </div>
+          <div className="grid gap-2">
+            <Label className="text-sm font-medium text-zinc-800">
+              Hero Image
+            </Label>
+            <ImageUpload
+              value={heroImagePreview}
+              onChange={handleHeroImageChange}
+              onError={handleImageError}
+              maxSizeMB={4}
+            />
+          </div>
+        </section>
+      </Activity>
 
-      <section className="grid gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600">Testimonials</p>
+      {/* Offerings Tab */}
+      <Activity mode={ activeTab !== "offerings" ? "hidden" : "visible" }>
+        <section className="grid gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600">Offerings</p>
+            <h2 className="text-xl font-semibold text-zinc-900">Section title</h2>
+            <p className="text-sm text-zinc-600">Offerings list is driven by the database; this only sets the section heading.</p>
+          </div>
+          <Label className="grid gap-2 text-sm font-medium text-zinc-800">
+            Title
+            <Input
+              value={content.offerings.title}
+              onChange={(e) => handleOfferingsChange(e.target.value)}
+              maxLength={32}
+              required
+            />
+          </Label>
+        </section>
+      </Activity>
+
+      {/* Testimonials Tab */}
+      <Activity mode={ activeTab !== "testimonials" ? "hidden" : "visible" }>
+        <section className="grid gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600">Testimonials</p>
           <h2 className="text-xl font-semibold text-zinc-900">Quotes</h2>
           <p className="text-sm text-zinc-600">Add social proof cards with author details and avatar URLs.</p>
         </div>
@@ -305,8 +347,10 @@ export default function HomeForm({ initialContent }: Props) {
           </button>
         </div>
       </section>
+    </Activity>
 
-      <div className="flex items-center justify-end gap-3">
+      {/* Submit Button - Always Visible */}
+      <div className="flex items-center justify-end gap-3 border-t border-zinc-200 pt-4">
         <button
           type="submit"
           disabled={isPending}
@@ -315,7 +359,8 @@ export default function HomeForm({ initialContent }: Props) {
             isPending && "opacity-70",
           )}
         >
-          {isPending ? "Saving..." : "Save changes"}
+          { isPending ? <Spinner className="mr-2"/> : null }
+          {isPending ? "Saving" : "Save changes"}
         </button>
       </div>
     </form>
