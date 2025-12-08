@@ -37,12 +37,6 @@ export default async function ContactPage() {
               >
                 {content.ctaText}
               </Link>
-              <Link
-                href="/admin/contact"
-                className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 shadow-sm transition hover:border-amber-200 hover:text-amber-700"
-              >
-                Edit contact page
-              </Link>
             </div>
           </div>
           <div className="relative h-72 overflow-hidden rounded-2xl bg-zinc-100 shadow-lg lg:h-96">
@@ -88,7 +82,7 @@ export default async function ContactPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">Need something specific?</p>
             <p className="mt-3 text-lg font-semibold text-amber-900">Tell us what you need.</p>
             <p className="mt-2">
-              Projects, partnerships, or quick questions—drop a note and we’ll tailor a response.
+              Partnerships, bulk orders, or other questions? We're here to help.
             </p>
             <div className="mt-4">
               <Link

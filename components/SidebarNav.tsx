@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowBigLeft, ArrowLeft, Home, Info, MessageSquare } from "lucide-react";
+import { ArrowBigLeft, ArrowLeft, Building2, Home, Info, MessageSquare } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader } from "@/components/ui/sidebar";
@@ -14,6 +14,7 @@ export default function SidebarNav() {
         { title: "Home", href: "/admin/home", icon: Home},
         { title: "About", href: "/admin/about", icon: Info },
         { title: "Contact", href: "/admin/contact", icon: MessageSquare },
+        { title: "Company Info", href: "/admin/company-info", icon: Building2 },
     ];
 
 

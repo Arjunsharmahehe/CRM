@@ -5,14 +5,17 @@ import { saveHomePage } from "@/server/actions";
 import { HomepageSchema } from "@/types";
 import { cn } from "@/lib/utils";
 import type { z } from "zod";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import { ImageUpload } from "@/components/image-upload";
+import { toast } from "sonner";
 
 type HomeContent = z.infer<typeof HomepageSchema>;
 
 type Props = {
   initialContent: HomeContent;
 };
-
-type Status = { type: "success" | "error"; message: string } | null;
 
 const newTestimonial = () => ({
   quote: "A short testimonial about our work.",
@@ -23,7 +26,15 @@ const newTestimonial = () => ({
 
 export default function HomeForm({ initialContent }: Props) {
   const [content, setContent] = useState<HomeContent>(initialContent);
-  const [status, setStatus] = useState<Status>(null);
+  const [heroImagePreview, setHeroImagePreview] = useState<string | null>(
+    initialContent.hero.heroImageUrl || null
+  );
+  const [testimonialImages, setTestimonialImages] = useState<{ [key: number]: string | null }>(
+    Object.fromEntries(
+      initialContent.testimonials.items.map((item, index) => [index, item.authorImageUrl || null])
+    )
+  );
+
   const [isPending, startTransition] = useTransition();
 
   const handleHeroChange = (key: keyof HomeContent["hero"], value: string) => {
@@ -31,6 +42,22 @@ export default function HomeForm({ initialContent }: Props) {
       ...prev,
       hero: { ...prev.hero, [key]: value },
     }));
+  };
+
+  const handleHeroImageChange = (base64: string | null) => {
+    setHeroImagePreview(base64);
+    console.log("Hero image updated");
+    // TODO: Upload to server and get URL
+  };
+
+  const handleTestimonialImageChange = (index: number, base64: string | null) => {
+    setTestimonialImages((prev) => ({ ...prev, [index]: base64 }));
+    console.log(`Testimonial ${index} image updated`);
+    // TODO: Upload to server and get URL
+  };
+
+  const handleImageError = (message: string) => {
+    toast.error(message);
   };
 
   const handleOfferingsChange = (value: string) => {
@@ -63,12 +90,17 @@ export default function HomeForm({ initialContent }: Props) {
   };
 
   const addTestimonial = () => {
+    const newIndex = content.testimonials.items.length;
     setContent((prev) => ({
       ...prev,
       testimonials: {
         ...prev.testimonials,
         items: [...prev.testimonials.items, newTestimonial()],
       },
+    }));
+    setTestimonialImages((prev) => ({
+      ...prev,
+      [newIndex]: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=200&q=80",
     }));
   };
 
@@ -80,21 +112,37 @@ export default function HomeForm({ initialContent }: Props) {
         items: prev.testimonials.items.filter((_, i) => i !== index),
       },
     }));
+    setTestimonialImages((prev) => {
+      const updated = { ...prev };
+      delete updated[index];
+      // Reindex remaining items
+      const reindexed: { [key: number]: string | null } = {};
+      Object.keys(updated)
+        .map(Number)
+        .sort((a, b) => a - b)
+        .forEach((oldIndex, newIndex) => {
+          if (oldIndex > index) {
+            reindexed[newIndex] = updated[oldIndex];
+          } else {
+            reindexed[oldIndex] = updated[oldIndex];
+          }
+        });
+      return reindexed;
+    });
   };
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setStatus(null);
 
     startTransition(async () => {
       try {
         const payload = HomepageSchema.parse(content);
         await saveHomePage(payload);
-        setStatus({ type: "success", message: "Homepage saved." });
+        toast.success("Homepage saved.");
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Something went wrong. Please try again.";
-        setStatus({ type: "error", message });
+          toast.error(message);
       }
     });
   };
@@ -108,60 +156,58 @@ export default function HomeForm({ initialContent }: Props) {
           <p className="text-sm text-zinc-600">The first thing visitors see.</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="grid gap-2 text-sm font-medium text-zinc-800">
+          <Label className="grid h-fit gap-2 text-sm font-medium text-zinc-800">
             Headline
-            <input
-              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+            <Input
               value={content.hero.headline}
               onChange={(e) => handleHeroChange("headline", e.target.value)}
               maxLength={48}
               required
             />
-          </label>
-          <label className="grid gap-2 text-sm font-medium text-zinc-800">
+          </Label>
+          <Label className="grid gap-2 text-sm font-medium text-zinc-800">
             Subheadline
-            <textarea
-              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+            <Textarea
+              className="resize-none"
               value={content.hero.subheadline}
               onChange={(e) => handleHeroChange("subheadline", e.target.value)}
               maxLength={128}
               rows={3}
               required
             />
-          </label>
+          </Label>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
-          <label className="grid gap-2 text-sm font-medium text-zinc-800">
+          <Label className="grid gap-2 text-sm font-medium text-zinc-800">
             CTA Text
-            <input
-              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+            <Input
               value={content.hero.ctaText}
               onChange={(e) => handleHeroChange("ctaText", e.target.value)}
               maxLength={24}
               required
             />
-          </label>
-          <label className="grid gap-2 text-sm font-medium text-zinc-800 sm:col-span-2">
+          </Label>
+          <Label className="grid gap-2 text-sm font-medium text-zinc-800 sm:col-span-2">
             CTA Link (URL)
-            <input
-              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+            <Input
               type="url"
               value={content.hero.ctaLink}
               onChange={(e) => handleHeroChange("ctaLink", e.target.value)}
               required
             />
-          </label>
+          </Label>
         </div>
-        <label className="grid gap-2 text-sm font-medium text-zinc-800">
-          Hero Image URL
-          <input
-            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
-            type="url"
-            value={content.hero.heroImageUrl}
-            onChange={(e) => handleHeroChange("heroImageUrl", e.target.value)}
-            required
+        <div className="grid gap-2">
+          <Label className="text-sm font-medium text-zinc-800">
+            Hero Image
+          </Label>
+          <ImageUpload
+            value={heroImagePreview}
+            onChange={handleHeroImageChange}
+            onError={handleImageError}
+            maxSizeMB={4}
           />
-        </label>
+        </div>
       </section>
 
       <section className="grid gap-4">
@@ -170,16 +216,15 @@ export default function HomeForm({ initialContent }: Props) {
           <h2 className="text-xl font-semibold text-zinc-900">Section title</h2>
           <p className="text-sm text-zinc-600">Offerings list is driven by the database; this only sets the section heading.</p>
         </div>
-        <label className="grid gap-2 text-sm font-medium text-zinc-800">
+        <Label className="grid gap-2 text-sm font-medium text-zinc-800">
           Title
-          <input
-            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+          <Input
             value={content.offerings.title}
             onChange={(e) => handleOfferingsChange(e.target.value)}
             maxLength={32}
             required
           />
-        </label>
+        </Label>
       </section>
 
       <section className="grid gap-4">
@@ -188,54 +233,56 @@ export default function HomeForm({ initialContent }: Props) {
           <h2 className="text-xl font-semibold text-zinc-900">Quotes</h2>
           <p className="text-sm text-zinc-600">Add social proof cards with author details and avatar URLs.</p>
         </div>
-        <label className="grid gap-2 text-sm font-medium text-zinc-800">
+        <Label className="grid gap-2 text-sm font-medium text-zinc-800">
           Section title
-          <input
-            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+          <Input
             value={content.testimonials.title}
             onChange={(e) => handleTestimonialsTitleChange(e.target.value)}
             maxLength={32}
             required
           />
-        </label>
+        </Label>
 
         <div className="grid gap-4">
           {content.testimonials.items.map((item, index) => (
             <div key={index} className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div className="grid flex-1 gap-3">
-                  <label className="grid gap-1 text-sm font-medium text-zinc-800">
+                  <Label className="grid gap-1 text-sm font-medium text-zinc-800">
                     Quote
-                    <textarea
-                      className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+                    <Textarea
+                      className="resize-none"
                       value={item.quote}
                       onChange={(e) => handleTestimonialChange(index, "quote", e.target.value)}
                       maxLength={256}
                       rows={3}
                       required
                     />
-                  </label>
+                  </Label>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="grid gap-1 text-sm font-medium text-zinc-800">
+                    <Label className="grid gap-1 text-sm font-medium text-zinc-800">
                       Author
-                      <input
-                        className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+                      <Input
                         value={item.author}
                         onChange={(e) => handleTestimonialChange(index, "author", e.target.value)}
                         maxLength={64}
                         required
                       />
-                    </label>
-                    <label className="grid gap-1 text-sm font-medium text-zinc-800">
-                      Author image URL
-                      <input
-                        className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
-                        type="url"
-                        value={item.authorImageUrl}
-                        onChange={(e) => handleTestimonialChange(index, "authorImageUrl", e.target.value)}
-                        required
-                      />
-                    </label>
+                    </Label>
+                  </div>
+                  <div className="grid gap-1">
+                    <Label className="text-sm font-medium text-zinc-800">
+                      Author Image
+                    </Label>
+                    <ImageUpload
+                      value={testimonialImages[index] ?? null}
+                      onChange={(base64) => handleTestimonialImageChange(index, base64)}
+                      onError={handleImageError}
+                      maxSizeMB={2}
+                    />
+                  </div>
+                  <div className="hidden">
+                    {/* Keep original structure for backward compatibility */}
                   </div>
                 </div>
                 <button
@@ -258,19 +305,6 @@ export default function HomeForm({ initialContent }: Props) {
           </button>
         </div>
       </section>
-
-      {status && (
-        <div
-          className={cn(
-            "rounded-lg border px-4 py-3 text-sm",
-            status.type === "success"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-              : "border-rose-200 bg-rose-50 text-rose-700",
-          )}
-        >
-          {status.message}
-        </div>
-      )}
 
       <div className="flex items-center justify-end gap-3">
         <button

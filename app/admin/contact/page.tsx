@@ -17,7 +17,7 @@ const defaultContactContent: ContactContent = {
 
 async function Form(){
   "use cache"
-  cacheTag("contact-page");
+  cacheTag("contact-form");
   const existing = await getContactPage();
   const initialContent = existing?.content ?? defaultContactContent;
 
@@ -25,8 +25,6 @@ async function Form(){
 }
 
 export default async function AdminContactPage() {
-  const existing = await getContactPage();
-  const initialContent = existing?.content ?? defaultContactContent;
 
   return (
     <AdminPageWrapper pageName="Contact" headline="Contact page content" subheadline="Update the headline, subheadline, and contact details for your Contact page.">

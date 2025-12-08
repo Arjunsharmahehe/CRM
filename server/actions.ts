@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { db } from "../db";
 import { offerings, pages } from "../db/schema";
-import { HomepageSchema } from "../types";
+import { HomepageSchema, CompanyInfoSchema } from "../types";
 import { AboutSchema } from "@/app/admin/about/schema";
 import { ContactSchema } from "@/app/admin/contact/schema";
 import { updateTag } from "next/cache";
@@ -103,6 +103,7 @@ export async function saveHomePage(content: unknown) {
 			set: { content: validatedContent },
 		});
     updateTag("home-page");
+	updateTag("home-form");
 	return { slug: "home", content: validatedContent };
 }
 
@@ -125,6 +126,7 @@ export async function saveAboutPage(content: unknown) {
 			set: { content: validatedContent },
 		});
 	updateTag("about-page");
+	updateTag("about-form");
 	return { slug: "about" as const, content: validatedContent };
 }
 
@@ -147,7 +149,30 @@ export async function saveContactPage(content: unknown) {
 			set: { content: validatedContent },
 		});
 	updateTag("contact-page");
+	updateTag("contact-form");
 	return { slug: "contact" as const, content: validatedContent };
+}
+
+export async function getCompanyInfo() {
+	const rows = await db.select().from(pages).where(eq(pages.slug, "company-info")).limit(1);
+	if (rows.length === 0) return null;
+
+	const content = CompanyInfoSchema.parse(rows[0].content);
+	return { slug: "company-info" as const, content };
+}
+
+export async function saveCompanyInfo(content: unknown) {
+	const validatedContent = CompanyInfoSchema.parse(content);
+
+	await db
+		.insert(pages)
+		.values({ slug: "company-info", content: validatedContent })
+		.onConflictDoUpdate({
+			target: pages.slug,
+			set: { content: validatedContent },
+		});
+	updateTag("company-info-form");
+	return { slug: "company-info" as const, content: validatedContent };
 }
 
 export async function listActiveOfferings() {
@@ -160,15 +185,10 @@ export async function listActiveOfferings() {
 	return rows;
 }
 
-export async function listOfferings() {
-	const rows = await db.select().from(offerings).orderBy(offerings.id);
-	return rows;
-}
-
 export async function createOffering(input: unknown) {
 	const parsed = OfferingInputSchema.parse(input);
 	const [row] = await db.insert(offerings).values(parsed).returning();
-	updateTag("offerings");
+
 	return row ?? parsed;
 }
 
@@ -193,6 +213,5 @@ export async function updateOffering(id: number, patch: unknown) {
 		throw new Error(`Offering with id ${safeId} not found.`);
 	}
 
-	updateTag("offerings");
 	return row;
 }

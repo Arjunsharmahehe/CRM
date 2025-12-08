@@ -25,7 +25,7 @@ const defaultHomeContent: z.infer<typeof HomepageSchema> = {
 
 async function Form(){
     "use cache"
-    cacheTag("home-page");
+    cacheTag("home-form");
 	const existing = await getHomePage();
 	const initialContent = existing?.content ?? defaultHomeContent;
 

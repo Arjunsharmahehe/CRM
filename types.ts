@@ -20,3 +20,10 @@ export const HomepageSchema = z.object({
         }))
     }),
 })
+
+export const CompanyInfoSchema = z.object({
+    name: z.string().max(64, "Company name must be at most 64 characters long"),
+    tagline: z.string().max(128, "Tagline must be at most 128 characters long").optional(),
+    email: z.email("Email must be a valid email address"),
+    logoUrl: z.url("Logo URL must be a valid URL"),
+})

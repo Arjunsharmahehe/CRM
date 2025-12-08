@@ -15,7 +15,7 @@ const defaultAboutContent: AboutContent = {
 
 async function Form(){
   "use cache"
-  cacheTag("about-page");
+  cacheTag("about-form");
   const existing = await getAboutPage();
   const initialContent = existing?.content ?? defaultAboutContent;
 
