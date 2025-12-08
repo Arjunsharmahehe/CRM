@@ -17,8 +17,8 @@ const PageSlugSchema = z.string().min(1, "Slug is required");
 const OfferingInputSchema = z.object({
 	title: z.string().min(1, "Title is required"),
 	description: z.string().min(1, "Description is required"),
-	imageUrl: z.url().optional().nullable(),
-	href: z.url().optional().nullable(),
+	imageUrl: z.url().optional().or(z.literal("")).nullable(),
+	href: z.url().optional().or(z.literal("")).nullable(),
 	isActive: z.boolean().optional().default(true),
 });
 
@@ -185,10 +185,38 @@ export async function listActiveOfferings() {
 	return rows;
 }
 
+export async function listAllOfferings() {
+	const rows = await db
+		.select()
+		.from(offerings)
+		.orderBy(offerings.id);
+
+	return rows;
+}
+
+export async function deleteOffering(id: number) {
+	const safeId = z.number().int().positive().parse(id);
+	
+	const [row] = await db
+		.delete(offerings)
+		.where(eq(offerings.id, safeId))
+		.returning();
+
+	if (!row) {
+		throw new Error(`Offering with id ${safeId} not found.`);
+	}
+
+	updateTag("home-form");
+	updateTag("home-page");
+	return row;
+}
+
 export async function createOffering(input: unknown) {
 	const parsed = OfferingInputSchema.parse(input);
 	const [row] = await db.insert(offerings).values(parsed).returning();
-
+	
+	updateTag("home-form");
+	updateTag("home-page");
 	return row ?? parsed;
 }
 
@@ -212,6 +240,9 @@ export async function updateOffering(id: number, patch: unknown) {
 	if (!row) {
 		throw new Error(`Offering with id ${safeId} not found.`);
 	}
+
+	updateTag("home-form");
+	updateTag("home-page");
 
 	return row;
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { Activity, useState, useTransition } from "react";
-import { saveHomePage } from "@/server/actions";
+import { Activity, useState, useTransition, useEffect } from "react";
+import { saveHomePage, listAllOfferings } from "@/server/actions";
 import { HomepageSchema } from "@/types";
 import { cn } from "@/lib/utils";
 import type { z } from "zod";
@@ -11,8 +11,20 @@ import { Textarea } from "../ui/textarea";
 import { ImageUpload } from "@/components/image-upload";
 import { toast } from "sonner";
 import { Spinner } from "../ui/spinner";
+import { HomeFormTabs } from "./HomeFormTabs";
+import { OfferingSheet } from "./OfferingSheet";
+import { OfferingsList } from "./OfferingsList";
 
 type HomeContent = z.infer<typeof HomepageSchema>;
+
+type Offering = {
+  id: number;
+  title: string;
+  description: string;
+  imageUrl: string | null;
+  href: string | null;
+  isActive: boolean | null;
+};
 
 type Props = {
   initialContent: HomeContent;
@@ -38,8 +50,37 @@ export default function HomeForm({ initialContent }: Props) {
       initialContent.testimonials.items.map((item, index) => [index, item.authorImageUrl || null])
     )
   );
-
+  const [offerings, setOfferings] = useState<Offering[]>([]);
+  const [offeringSheetOpen, setOfferingSheetOpen] = useState(false);
+  const [selectedOffering, setSelectedOffering] = useState<Offering | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const fetchOfferings = async () => {
+    try {
+      const data = await listAllOfferings();
+      setOfferings(data);
+    } catch (error) {
+      toast.error("Failed to load offerings");
+    }
+  };
+
+  useEffect(() => {
+    fetchOfferings();
+  }, []);
+
+  const handleCreateOffering = () => {
+    setSelectedOffering(null);
+    setOfferingSheetOpen(true);
+  };
+
+  const handleEditOffering = (offering: Offering) => {
+    setSelectedOffering(offering);
+    setOfferingSheetOpen(true);
+  };
+
+  const handleOfferingSuccess = () => {
+    fetchOfferings();
+  };
 
   const handleHeroChange = (key: keyof HomeContent["hero"], value: string) => {
     setContent((prev) => ({
@@ -159,29 +200,7 @@ export default function HomeForm({ initialContent }: Props) {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-6">
-      {/* Custom Tabs */}
-      <div className="border-b border-zinc-200">
-        <div className="flex gap-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "px-4 py-2.5 text-sm font-medium transition-colors relative",
-                activeTab === tab.id
-                  ? "text-amber-700"
-                  : "text-zinc-600 hover:text-zinc-900"
-              )}
-            >
-              {tab.label}
-              {activeTab === tab.id && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-600" />
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
+      <HomeFormTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Hero Tab */}
       <Activity mode={ activeTab !== "hero" ? "hidden" : "visible" }>
@@ -264,8 +283,33 @@ export default function HomeForm({ initialContent }: Props) {
               required
             />
           </Label>
+          
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-zinc-800">Manage Offerings</h3>
+              <button
+                type="button"
+                onClick={handleCreateOffering}
+                className="inline-flex items-center gap-2 rounded-lg border border-dashed border-amber-300 px-4 py-2 text-sm font-medium text-amber-700 hover:border-amber-400 hover:bg-amber-50"
+              >
+                + Add New Offering
+              </button>
+            </div>
+            <OfferingsList
+              offerings={offerings}
+              onEdit={handleEditOffering}
+              onDelete={fetchOfferings}
+            />
+          </div>
         </section>
       </Activity>
+
+      <OfferingSheet
+        open={offeringSheetOpen}
+        onOpenChange={setOfferingSheetOpen}
+        offering={selectedOffering}
+        onSuccess={handleOfferingSuccess}
+      />
 
       {/* Testimonials Tab */}
       <Activity mode={ activeTab !== "testimonials" ? "hidden" : "visible" }>
