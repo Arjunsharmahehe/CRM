@@ -27,3 +27,21 @@ export const CompanyInfoSchema = z.object({
     email: z.email("Email must be a valid email address"),
     logoUrl: z.url("Logo URL must be a valid URL"),
 })
+
+export const TermsSchema = z.object({
+    title: z.string().max(100, "Title must be at most 100 characters long"),
+    content: z.string(),
+    effectiveDate: z.string().min(1, "Effective date is required")
+})
+
+export const PrivacySchema = z.object({
+  title: z.string().max(128, "Title must be at most 128 characters"),
+  content: z.string().min(1, "Content is required"),
+  effectiveDate: z.string().min(1, "Effective date is required"),
+});
+
+export type HomepageContent = z.infer<typeof HomepageSchema>;
+export type CompanyInfoContent = z.infer<typeof CompanyInfoSchema>;
+export type TermsContent = z.infer<typeof TermsSchema>;
+export type PrivacyContent = z.infer<typeof PrivacySchema>;
+

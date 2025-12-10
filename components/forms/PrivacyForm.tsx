@@ -1,0 +1,103 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { savePrivacyPage } from "@/server/actions";
+import { PrivacySchema, type PrivacyContent } from "@/types"
+import { Label } from "@radix-ui/react-label";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+export default function PrivacyForm({ initialContent }: { initialContent: PrivacyContent }) {
+  const [content, setContent] = useState<PrivacyContent>(initialContent);
+  const [isPending, startTransition] = useTransition();
+
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    startTransition(async () => {
+      try {
+        const payload = PrivacySchema.parse(content);
+        await savePrivacyPage(payload);
+        toast.success("Privacy Policy saved.");
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Something went wrong.";
+        toast.error(message);
+      }
+    });
+  };
+
+  return (
+    <form onSubmit={onSubmit} className="flex flex-col gap-8">
+      <section className="grid gap-4">
+        <div className="grid gap-3">
+          <Label htmlFor="title" className="text-sm font-medium text-zinc-900">
+            Page Title
+          </Label>
+          <Input
+            id="title"
+            value={content.title}
+            onChange={(e) => setContent({ ...content, title: e.target.value })}
+            placeholder="Privacy Policy"
+          />
+        </div>
+
+        <div className="grid gap-3">
+          <Label htmlFor="effectiveDate" className="text-sm font-medium text-zinc-900">
+            Effective Date
+          </Label>
+          <Input
+            id="effectiveDate"
+            type="date"
+            value={content.effectiveDate}
+            onChange={(e) => setContent({ ...content, effectiveDate: e.target.value })}
+          />
+        </div>
+
+        <div className="grid gap-3">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="content" className="text-sm font-medium text-zinc-900">
+              Content (Markdown)
+            </Label>
+            <a
+              href="https://www.markdownguide.org/basic-syntax/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-amber-600 hover:text-amber-700"
+            >
+              Markdown Guide →
+            </a>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Textarea
+              id="content"
+              value={content.content}
+              onChange={(e) => setContent({ ...content, content: e.target.value })}
+              placeholder="# Privacy Policy&#10;&#10;## Information We Collect&#10;&#10;We collect information..."
+              rows={20}
+              className="font-mono text-sm"
+            />
+            <div className="rounded-lg border border-zinc-200 bg-white p-4 overflow-auto max-h-[500px]">
+              <div className="prose prose-sm prose-zinc max-w-none">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {content.content || "*Preview will appear here...*"}
+                </ReactMarkdown>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="flex justify-end gap-3 border-t border-zinc-200 pt-6">
+        <button
+          type="submit"
+          disabled={isPending}
+          className="rounded-lg bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:opacity-50"
+        >
+          {isPending ? "Saving..." : "Save Changes"}
+        </button>
+      </div>
+    </form>
+  );
+}

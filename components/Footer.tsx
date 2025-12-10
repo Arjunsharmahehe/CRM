@@ -7,6 +7,8 @@ const navRoutes = [
   { name: "Home", href: "/" },
   { name: "About", href: "/about" },
   { name: "Contact", href: "/contact" },
+  { name: "Terms", href: "/terms-and-conditions" },
+  { name: "Privacy", href: "/privacy-policy" },
 ];
 
 async function CompanyInfoAndOfferings(){

@@ -8,6 +8,8 @@ import { offerings, pages } from "../db/schema";
 import { HomepageSchema, CompanyInfoSchema } from "../types";
 import { AboutSchema } from "@/app/admin/about/schema";
 import { ContactSchema } from "@/app/admin/contact/schema";
+import { TermsSchema } from "@/types";
+import { PrivacySchema } from "@/types";
 import { updateTag } from "next/cache";
 
 type HomepageContent = z.infer<typeof HomepageSchema>;
@@ -248,4 +250,46 @@ export async function updateOffering(id: number, patch: unknown) {
 	updateTag("home-page");
 
 	return row;
+}
+
+export async function getTermsPage() {
+  const page = await getPage("terms");
+  if (!page) return null;
+  const content = TermsSchema.parse(page.content);
+  return { slug: "terms" as const, content };
+}
+
+export async function saveTermsPage(content: unknown) {
+  const validatedContent = TermsSchema.parse(content);
+  await db
+    .insert(pages)
+    .values({ slug: "terms", content: validatedContent })
+    .onConflictDoUpdate({
+      target: pages.slug,
+      set: { content: validatedContent },
+    });
+  updateTag("terms-form");
+  updateTag("terms-page");
+  return { slug: "terms" as const, content: validatedContent };
+}
+
+export async function getPrivacyPage() {
+  const page = await getPage("privacy");
+  if (!page) return null;
+  const content = PrivacySchema.parse(page.content);
+  return { slug: "privacy" as const, content };
+}
+
+export async function savePrivacyPage(content: unknown) {
+  const validatedContent = PrivacySchema.parse(content);
+  await db
+    .insert(pages)
+    .values({ slug: "privacy", content: validatedContent })
+    .onConflictDoUpdate({
+      target: pages.slug,
+      set: { content: validatedContent },
+    });
+  updateTag("privacy-form");
+  updateTag("privacy-page");
+  return { slug: "privacy" as const, content: validatedContent };
 }
