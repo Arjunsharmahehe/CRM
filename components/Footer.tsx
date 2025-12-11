@@ -7,8 +7,8 @@ const navRoutes = [
   { name: "Home", href: "/" },
   { name: "About", href: "/about" },
   { name: "Contact", href: "/contact" },
-  { name: "Terms", href: "/terms-and-conditions" },
-  { name: "Privacy", href: "/privacy-policy" },
+  { name: "Terms & Conditions", href: "/terms-and-conditions" },
+  { name: "Privacy Policy", href: "/privacy-policy" },
 ];
 
 async function CompanyInfoAndOfferings(){
@@ -70,7 +70,7 @@ export default async function Footer() {
   return (
     <footer className="border-t border-zinc-200 bg-white">
       <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-8 sm:grid-cols-3">
           {/* Company Info */}
             <Suspense fallback={<div>Loading...</div>}>
                 <CompanyInfoAndOfferings />

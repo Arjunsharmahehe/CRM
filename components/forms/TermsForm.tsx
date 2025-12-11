@@ -9,10 +9,20 @@ import { Textarea } from "../ui/textarea";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { ChevronDownIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 export default function TermsForm({ initialContent }: { initialContent: TermsContent }) {
   const [content, setContent] = useState<TermsContent>(initialContent);
   const [isPending, startTransition] = useTransition();
+  const [date, setDate ] = useState<Date | undefined>(new Date(content.effectiveDate))
+  const [ open, setOpen ] = useState(false)
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -47,12 +57,30 @@ export default function TermsForm({ initialContent }: { initialContent: TermsCon
           <Label htmlFor="effectiveDate" className="text-sm font-medium text-zinc-900">
             Effective Date
           </Label>
-          <Input
-            id="effectiveDate"
-            type="date"
-            value={content.effectiveDate}
-            onChange={(e) => setContent({ ...content, effectiveDate: e.target.value })}
-          />
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                id="date"
+                className="w-48 justify-between font-normal"
+              >
+                {date ? date.toLocaleDateString() : "Select date"}
+                <ChevronDownIcon />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={date}
+                captionLayout="dropdown"
+                onSelect={(date) => {
+                  setContent({ ...content, effectiveDate: date?.toDateString() as string})
+                  setDate(date)
+                  setOpen(false)
+                }}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div className="grid gap-3">
