@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getAboutPage } from "@/server/actions";
-import { AboutSchema, type AboutContent } from "@/app/admin/about/schema";
+import { AboutSchema, type AboutContent } from "@/types";
 import { cacheTag } from "next/cache";
 
 const defaultAboutContent: AboutContent = {

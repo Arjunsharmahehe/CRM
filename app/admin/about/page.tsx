@@ -1,5 +1,5 @@
 import { getAboutPage } from "@/server/actions";
-import { AboutSchema, type AboutContent } from "./schema";
+import { AboutSchema, type AboutContent } from "@/types";
 import AboutForm from "@/components/forms/AboutForm";
 import AdminPageWrapper from "@/components/AdminPageWrapper";
 import { cacheTag } from "next/cache";

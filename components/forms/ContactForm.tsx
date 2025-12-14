@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { saveContactPage } from "@/server/actions";
-import { ContactSchema, type ContactContent } from "../../app/admin/contact/schema";
+import { ContactSchema, type ContactContent } from "@/types";
 import { cn } from "@/lib/utils";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";

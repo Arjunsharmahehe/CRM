@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getContactPage } from "@/server/actions";
-import { ContactSchema, type ContactContent } from "@/app/admin/contact/schema";
+import { ContactSchema, type ContactContent } from "@/types";
 import { cacheTag } from "next/cache";
 
 const defaultContactContent: ContactContent = {

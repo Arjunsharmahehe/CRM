@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { saveAboutPage } from "@/server/actions";
-import { AboutSchema, type AboutContent } from "../../app/admin/about/schema";
+import { AboutSchema, type AboutContent } from "@/types";
 import { cn } from "@/lib/utils";
 import { Label } from "@radix-ui/react-label";
 import { Input } from "../ui/input";

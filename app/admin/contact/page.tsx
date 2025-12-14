@@ -1,5 +1,5 @@
 import { getContactPage } from "@/server/actions";
-import { ContactSchema, type ContactContent } from "./schema";
+import { ContactSchema, type ContactContent } from "@/types";
 import ContactForm from "@/components/forms/ContactForm";
 import { cacheTag } from "next/cache";
 import AdminPageWrapper from "@/components/AdminPageWrapper";
